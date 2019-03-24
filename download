@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'arena'
 require 'open-uri'
 require 'dotenv/load'

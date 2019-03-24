@@ -1,4 +1,6 @@
 /PDF/
+.DS_Store
+
 *.gem
 *.rbc
 /.config
