@@ -1,6 +1,6 @@
 # Arena PDF downloader
 
-Download all the PDF files in an arena channel
+Download all the PDF files in an [are.na](https://are.na) channel.
 
 ### How to use it
 
