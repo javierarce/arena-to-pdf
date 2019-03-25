@@ -10,10 +10,10 @@ class ArenaDownloader
 
   attr_accessor :url
 
-  def initialize(url)
+  def initialize(url, dir)
     @url = url
     @channel = nil
-    @dirname = nil
+    @dirname = dir
   end
 
   def showInfo(message)
@@ -24,11 +24,14 @@ class ArenaDownloader
     puts "\033[31m#{message}\033[0m" 
   end
 
-  def start
-
+  def login
     Arena.configure do |config|
       config.access_token = ENV['ACCESS_TOKEN']
     end
+  end
+
+  def start
+    login
 
     slug = URI(@url).path.split('/').last
 
@@ -38,11 +41,11 @@ class ArenaDownloader
       showError('Channel not found')
     end
 
-      download if @channel
+    download if @channel
   end
 
   def createDirectory
-    @dirname = "PDF/#{@channel.slug}"
+    @dirname = @dirname ?  "#{@dirname}/#{@channel.title}" : "PDF/#{@channel.title}"
 
     unless Dir.exists?(@dirname)
       FileUtils.mkdir_p(@dirname) 
@@ -78,9 +81,8 @@ class ArenaDownloader
 end
 
 if ARGV[0].nil?
-  puts './download CHANNEL_URL'
-  return
+  puts 'Command syntax: ./download CHANNEL_URL [PDF_FOLDER_PATH]'
+else
+  downloader = ArenaDownloader.new(ARGV[0], ARGV[1])
+  downloader.start
 end
-
-downloader = ArenaDownloader.new(ARGV[0])
-downloader.start
