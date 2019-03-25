@@ -1,5 +1,6 @@
 /PDF/
 .DS_Store
+Gemfile.lock
 
 *.gem
 *.rbc
