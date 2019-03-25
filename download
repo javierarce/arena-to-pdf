@@ -62,15 +62,17 @@ class ArenaDownloader
       c if c.attachment and c.attachment.extension === 'pdf'
     end
 
-    if connectables.length
+    if connectables.length === 0
+      showError("#{@channel.title} doesn't contain any PDF ")
+      return
+    end
 
-      showInfo("Downloading #{connectables.length} files from #{@channel.title}")
+    showInfo("Downloading #{connectables.length} files from #{@channel.title}")
 
-      createDirectory
+    createDirectory
 
-      connectables.each_with_index do |c, index| 
-        downloadAttachment(c.title, c.attachment, index + 1, connectables.length)
-      end 
+    connectables.each_with_index do |c, index| 
+      downloadAttachment(c.title, c.attachment, index + 1, connectables.length)
     end 
   end
 end
