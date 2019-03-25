@@ -13,7 +13,8 @@ class ArenaDownloader
   def initialize(url, dir)
     @url = url
     @channel = nil
-    @dirname = dir
+    @dirname = dir || ENV['PDF_FOLDER_PATH']
+    puts @dirname
   end
 
   def showInfo(message)
