@@ -7,6 +7,6 @@ Download all the PDF files in an [are.na](https://are.na) channel.
 1. Run `bundle install`
 2. Run `./download CHANNEL_URL [PDF_FOLDER_PATH]`
 
-If the channel is private, you'll need to get an `ACCESS_TOKEN` first. Once you have it, rename `env.sample` to `.env` and add your [are.na access token](https://dev.are.na/oauth/applications)
+If the channel is private, you'll need to get an `ACCESS_TOKEN` first. Once you have it, rename `env.sample` to `.env` and throw your [are.na access token](https://dev.are.na/oauth/applications) there.
 
-Protip: you can also write down the path to your PDF download folder in your `.env` file
+Protip: if you write down the path to your PDF download folder in your `.env` file, you won't need to specify it everytime you run the command.
