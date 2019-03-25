@@ -36,7 +36,7 @@ class ArenaDownloader
     slug = URI(@url).path.split('/').last
 
     begin
-      @channel = Arena.channel(slug)
+      @channel = Arena.channel(slug, { per: 100 })
     rescue Exception => e
       showError('Channel not found')
     end
