@@ -65,7 +65,7 @@ class ArenaDownloader
 
   def download
     connectables = @channel.contents.select do |c|
-      c if c.attachment and c.attachment.extension === 'pdf'
+        c if c.respond_to?(:attachment) and c.attachment and c.attachment.extension === 'pdf'
     end
 
     if connectables.length === 0
