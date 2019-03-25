@@ -4,24 +4,81 @@ require 'arena'
 require 'open-uri'
 require 'dotenv/load'
 require 'fileutils'
+require 'uri'
 
-Arena.configure do |config|
-  config.access_token = ENV['ACCESS_TOKEN']
-end
+class ArenaDownloader
 
-@channel = Arena.channel(ARGV[0])
+  attr_accessor :url
 
-@channel.contents.each do |connectable| 
+  def initialize(url)
+    @url = url
+    @channel = nil
+    @dirname = nil
+  end
 
-  if connectable and connectable.attachment and connectable.attachment.extension === 'pdf'
-    attachment = connectable.attachment
+  def showInfo(message)
+    puts "\033[32m#{message}\033[0m" 
+  end
 
+  def showError(message)
+    puts "\033[31m#{message}\033[0m" 
+  end
 
-    dirname = "PDF/#{@channel.slug}"
-    FileUtils.mkdir_p(dirname) unless Dir.exists?(dirname)
+  def start
 
-    open("#{dirname}/#{connectable.title}.pdf", 'wb') do |file|
+    Arena.configure do |config|
+      config.access_token = ENV['ACCESS_TOKEN']
+    end
+
+    slug = URI(@url).path.split('/').last
+
+    begin
+      @channel = Arena.channel(slug)
+    rescue Exception => e
+      showError('Channel not found')
+    end
+
+      download if @channel
+  end
+
+  def createDirectory
+    @dirname = "PDF/#{@channel.slug}"
+
+    unless Dir.exists?(@dirname)
+      FileUtils.mkdir_p(@dirname) 
+    end
+  end
+
+  def downloadAttachment(title, attachment, index, total)
+    puts "[#{index}/#{total}] \033[31m#{title}\033[0m" 
+
+    open("#{@dirname}/#{title}.pdf", 'wb') do |file|
       file << open(attachment.url).read
     end
   end
-end 
+
+  def download
+    connectables = @channel.contents.select do |c|
+      c if c.attachment and c.attachment.extension === 'pdf'
+    end
+
+    if connectables.length
+
+      showInfo("Downloading #{connectables.length} files from #{@channel.title}")
+
+      createDirectory
+
+      connectables.each_with_index do |c, index| 
+        downloadAttachment(c.title, c.attachment, index + 1, connectables.length)
+      end 
+    end 
+  end
+end
+
+if ARGV[0].nil?
+  puts './download CHANNEL_URL'
+  return
+end
+
+downloader = ArenaDownloader.new(ARGV[0])
+downloader.start
