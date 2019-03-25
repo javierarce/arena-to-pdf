@@ -14,7 +14,6 @@ class ArenaDownloader
     @url = url
     @channel = nil
     @dirname = dir || ENV['PDF_FOLDER_PATH']
-    puts @dirname
   end
 
   def showInfo(message)
@@ -56,7 +55,10 @@ class ArenaDownloader
   def downloadAttachment(title, attachment, index, total)
     puts "[#{index}/#{total}] \033[31m#{title}\033[0m" 
 
-    open("#{@dirname}/#{title}.pdf", 'wb') do |file|
+    filename = "#{@dirname}/#{title}"
+    filename += '.pdf' unless title.end_with? '.pdf'
+
+    open(filename, 'wb') do |file|
       file << open(attachment.url).read
     end
   end
