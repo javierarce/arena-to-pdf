@@ -36,12 +36,22 @@ class ArenaDownloader
     slug = URI(@url).path.split('/').last
 
     begin
-      @channel = Arena.channel(slug, { per: 100 })
+      per_page = 100
+      @channel = Arena.channel(slug, { page: 0, per: per_page })
+      blocksCount = @channel.length
+      pagesCount = ( blocksCount / per_page ) + ( (blocksCount % per_page == 0) ?  0 : 1 )
+
+      createDirectory
+
+      (pagesCount).times do |c|
+        @channel = Arena.channel(slug, { page: c + 1, per: per_page })
+        download(@channel.contents, c + 1)
+      end
+
     rescue Exception => e
-      showError('Channel not found')
+      showError("Channel not found #{e}")
     end
 
-    download if @channel
   end
 
   def createDirectory
@@ -52,20 +62,22 @@ class ArenaDownloader
     end
   end
 
-  def downloadAttachment(title, attachment, index, total)
-    puts "[#{index}/#{total}] \033[31m#{title}\033[0m" 
+  def downloadAttachment(title, attachment, page, index, total)
+    puts "[#{page} - #{index}/#{total}] \033[31m#{title}\033[0m" 
 
     filename = "#{@dirname}/#{title}"
     filename += '.pdf' unless title.end_with? '.pdf'
 
-    open(filename, 'wb') do |file|
-      file << open(attachment.url).read
+    unless File.exist?(filename)
+      open(filename, 'wb') do |file|
+        file << open(attachment.url).read
+      end
     end
   end
 
-  def download
-    connectables = @channel.contents.select do |c|
-        c if c.respond_to?(:attachment) and c.attachment and c.attachment.extension === 'pdf'
+  def download(content, page)
+    connectables = content.select do |c|
+      c if c.respond_to?(:attachment) and c.attachment and c.attachment.extension === 'pdf'
     end
 
     if connectables.length === 0
@@ -75,10 +87,8 @@ class ArenaDownloader
 
     showInfo("Downloading #{connectables.length} files from #{@channel.title}")
 
-    createDirectory
-
     connectables.each_with_index do |c, index| 
-      downloadAttachment(c.title, c.attachment, index + 1, connectables.length)
+      downloadAttachment(c.title, c.attachment, page, index + 1, connectables.length)
     end 
   end
 end
