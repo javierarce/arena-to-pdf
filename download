@@ -6,22 +6,29 @@ require 'dotenv/load'
 require 'fileutils'
 require 'uri'
 
+PDF_EXTENSION = 'pdf'
+
 class ArenaDownloader
 
   attr_accessor :url
 
   def initialize(url, dir)
+    @per_page = 100
     @url = url
     @channel = nil
     @dirname = dir || ENV['PDF_FOLDER_PATH']
   end
 
+  def showMessage(message, color = '32')
+    puts "\033[#{color}m#{message}\033[0m" 
+  end
+
   def showInfo(message)
-    puts "\033[32m#{message}\033[0m" 
+    showMessage(message)
   end
 
   def showError(message)
-    puts "\033[31m#{message}\033[0m" 
+    showMessage(message, 31)
   end
 
   def login
@@ -30,32 +37,37 @@ class ArenaDownloader
     end
   end
 
+  def sanitize_filename(filename)
+    filename.gsub('/', ' ')
+  end
+
   def start
     login
 
     slug = URI(@url).path.split('/').last
 
     begin
-      per_page = 100
-      @channel = Arena.channel(slug, { page: 0, per: per_page })
+      @channel = Arena.channel(slug, { page: 0, per: @per_page })
       blocksCount = @channel.length
-      pagesCount = ( blocksCount / per_page ) + ( (blocksCount % per_page == 0) ?  0 : 1 )
+
+      extraPage = blocksCount % @per_page == 0 ?  0 : 1
+      pagesCount = (blocksCount / @per_page) + extraPage
 
       createDirectory
 
-      (pagesCount).times do |c|
-        @channel = Arena.channel(slug, { page: c + 1, per: per_page })
-        download(@channel.contents, c + 1)
+      pagesCount.times do |c|
+        page = c + 1
+        @channel = Arena.channel(slug, { page: page, per: @per_page })
+        download(@channel.contents, page)
       end
 
     rescue Exception => e
       showError("Channel not found #{e}")
     end
-
   end
 
   def createDirectory
-    @dirname = @dirname ?  "#{@dirname}/#{@channel.title}" : "PDF/#{@channel.title}"
+    @dirname = @dirname ? "#{@dirname}/#{@channel.title}" : "#{PDF_EXTENSION}/#{@channel.title}"
 
     unless Dir.exists?(@dirname)
       FileUtils.mkdir_p(@dirname) 
@@ -65,13 +77,14 @@ class ArenaDownloader
   def downloadAttachment(title, attachment, page, index, total)
     puts "[#{page} - #{index}/#{total}] \033[31m#{title}\033[0m" 
 
-    filename = "#{@dirname}/#{title}"
-    filename += '.pdf' unless title.end_with? '.pdf'
+    filename = "#{@dirname}/#{sanitize_filename title}"
+    filename += ".#{PDF_EXTENSION}" unless title.end_with? ".#{PDF_EXTENSION}"
 
     unless File.exist?(filename)
       open(filename, 'wb') do |file|
         file << open(attachment.url).read
       end
+      sleep 2
     end
   end
 
