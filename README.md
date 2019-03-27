@@ -4,18 +4,9 @@ Download all the PDF files in an [are.na](https://are.na) channel.
 
 ### How to use it
 
-1. Clone this repo
-```bash
-git clone git@github.com:javierarce/arena-to-pdf.git
-```
-2. Install the dependencies
-```bash
-bundle install
-```
-3. Run the script: 
-```bash
-./download CHANNEL_URL [PDF_FOLDER_PATH]
-```
+1. Clone this repo `git clone git@github.com:javierarce/arena-to-pdf.git`
+2. Install the dependencies `bundle install`
+3. Run the script: `./download CHANNEL_URL [PDF_FOLDER_PATH]`
 
 ### Private channels
 
