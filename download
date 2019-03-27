@@ -53,12 +53,15 @@ class ArenaDownloader
       extraPage = blocksCount % @per_page == 0 ?  0 : 1
       pagesCount = (blocksCount / @per_page) + extraPage
 
+      showInfo("Downloading from #{blocksCount} #{blocksCount == 1 ? 'block' : 'blocks'} / #{@channel.title}")
+
       createDirectory
 
       pagesCount.times do |c|
         page = c + 1
         @channel = Arena.channel(slug, { page: page, per: @per_page })
-        download(@channel.contents, page)
+        download(@channel.contents, page, pagesCount)
+        sleep 5
       end
 
     rescue Exception => e
@@ -75,7 +78,7 @@ class ArenaDownloader
   end
 
   def downloadAttachment(title, attachment, page, index, total)
-    puts "[#{page} - #{index}/#{total}] \033[31m#{title}\033[0m" 
+    puts "\033[34m#{index}/#{total}\033[0m \033[31m#{title}\033[0m" 
 
     filename = "#{@dirname}/#{sanitize_filename title}"
     filename += ".#{PDF_EXTENSION}" unless title.end_with? ".#{PDF_EXTENSION}"
@@ -88,7 +91,7 @@ class ArenaDownloader
     end
   end
 
-  def download(content, page)
+  def download(content, page, pagesCount)
     connectables = content.select do |c|
       c if c.respond_to?(:attachment) and c.attachment and c.attachment.extension === 'pdf'
     end
@@ -98,7 +101,7 @@ class ArenaDownloader
       return
     end
 
-    showInfo("Downloading #{connectables.length} files from #{@channel.title}")
+    showInfo("\nPage #{page} of #{pagesCount}\n")
 
     connectables.each_with_index do |c, index| 
       downloadAttachment(c.title, c.attachment, page, index + 1, connectables.length)
