@@ -4,9 +4,23 @@ Download all the PDF files in an [are.na](https://are.na) channel.
 
 ### How to use it
 
-1. Run `bundle install`
-2. Run `./download CHANNEL_URL [PDF_FOLDER_PATH]`
+1. Clone this repo
+```bash
+git clone git@github.com:javierarce/arena-to-pdf.git
+```
+2. Install the dependencies
+```bash
+bundle install
+```
+3. Run the script: 
+```bash
+./download CHANNEL_URL [PDF_FOLDER_PATH]
+```
+
+### Private channels
 
 If the channel is private, you'll need to get an `ACCESS_TOKEN` first. Once you have it, rename `env.sample` to `.env` and throw your [are.na access token](https://dev.are.na/oauth/applications) there.
 
-Protip: if you write down the path to your PDF download folder in your `.env` file, you won't need to specify it everytime you run the command.
+### Protip
+
+If you write down the path to your PDF download folder in your `.env` file, you won't need to specify it everytime you run the command.
