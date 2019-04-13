@@ -100,16 +100,18 @@ class ArenaDownloader
   end
 
   def downloadAttachment(title, attachment, page, index, total)
-    puts "\033[34m#{"%02d" % index}/#{"%02d" % total}\033[0m \033[31m#{title}\033[0m" 
-
     filename = "#{@dirname}/#{sanitize_filename title}"
     filename += ".#{PDF_EXTENSION}" unless title.end_with? ".#{PDF_EXTENSION}"
 
     unless File.exist?(filename)
+      puts "\033[34m#{"%02d" % index}/#{"%02d" % total}\033[1m \033[31m#{title}\033[0m" 
+
       open(filename, 'wb') do |file|
         file << open(attachment.url).read
       end
       sleep 2
+    else
+      puts "\033[37m#{"%02d" % index}/#{"%02d" % total}\033[1m \033[37m#{title}\033[0m" 
     end
   end
 
