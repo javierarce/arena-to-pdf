@@ -57,6 +57,7 @@ class ArenaDownloader
   def download_from_manifest
     @manifest_lines.each do |slug|
       download_from_slug(slug)
+      puts "\n"
     end
   end
 
@@ -83,7 +84,6 @@ class ArenaDownloader
         page = c + 1
         @channel = Arena.channel(slug, { page: page, per: @per_page })
         download(@channel.contents, page, pagesCount)
-        sleep 5
       end
 
     rescue Exception => e
@@ -121,7 +121,7 @@ class ArenaDownloader
     end
 
     if connectables.length === 0
-      showError("#{@channel.title} doesn't contain any PDF ")
+      showError("#{@channel.title} doesn't contain any PDF")
       return
     end
 
@@ -156,11 +156,13 @@ end
 if ARGV[0].nil?
   puts 'Command syntax: ./download CHANNEL_URL [PDF_FOLDER_PATH]'
   puts 'Command syntax: ./download [PDF_FOLDER_PATH] --from-manifest'
-elsif ARGV.include?('--from-manifest')
-  index = ARGV.find_index('--from-manifest')
-  downloader = ArenaDownloader.new(nil, ARGV[1 - index])
-  downloader.start
 else
-  downloader = ArenaDownloader.new(ARGV[0], ARGV[1])
+  if ARGV.include?('--from-manifest')
+    index = ARGV.find_index('--from-manifest')
+    downloader = ArenaDownloader.new(nil, ARGV[1 - index])
+  else
+    downloader = ArenaDownloader.new(ARGV[0], ARGV[1])
+  end
+
   downloader.start
 end
