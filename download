@@ -7,6 +7,7 @@ require 'fileutils'
 require 'uri'
 
 PDF_EXTENSION = 'pdf'
+MANIFEST_PATH = 'manifest.txt'
 
 class ArenaDownloader
 
@@ -17,6 +18,7 @@ class ArenaDownloader
     @url = url
     @channel = nil
     @dirname = dir || ENV['PDF_FOLDER_PATH']
+    @manifest_lines = []
   end
 
   def showMessage(message, color = '32')
@@ -42,10 +44,30 @@ class ArenaDownloader
   end
 
   def start
+    read_manifest
     login
 
-    slug = URI(@url).path.split('/').last
+    if @url
+      download_from_url
+    else 
+      download_from_manifest
+    end
+  end
 
+  def download_from_manifest
+    @manifest_lines.each do |slug|
+      download_from_slug(slug)
+    end
+  end
+
+  def download_from_url
+    slug = URI(@url).path.split('/').last
+    write_manifest(slug)
+
+    download_from_slug(slug)
+  end
+
+  def download_from_slug(slug)
     begin
       @channel = Arena.channel(slug, { page: 0, per: @per_page })
       blocksCount = @channel.length
@@ -53,7 +75,7 @@ class ArenaDownloader
       extraPage = blocksCount % @per_page == 0 ?  0 : 1
       pagesCount = (blocksCount / @per_page) + extraPage
 
-      showInfo("Downloading from #{blocksCount} #{blocksCount == 1 ? 'block' : 'blocks'} / #{@channel.title}")
+      showInfo("Downloading from #{blocksCount} #{blocksCount == 1 ? 'block' : 'blocks'} / #{@channel.title} -→ #{@dirname}/#{@channel.title}")
 
       createDirectory
 
@@ -78,7 +100,7 @@ class ArenaDownloader
   end
 
   def downloadAttachment(title, attachment, page, index, total)
-    puts "\033[34m#{index}/#{total}\033[0m \033[31m#{title}\033[0m" 
+    puts "\033[34m#{"%02d" % index}/#{"%02d" % total}\033[0m \033[31m#{title}\033[0m" 
 
     filename = "#{@dirname}/#{sanitize_filename title}"
     filename += ".#{PDF_EXTENSION}" unless title.end_with? ".#{PDF_EXTENSION}"
@@ -107,10 +129,35 @@ class ArenaDownloader
       downloadAttachment(c.title, c.attachment, page, index + 1, connectables.length)
     end 
   end
+
+  def write_manifest(source)
+    @manifest_lines << source unless @manifest_lines.include?(source)
+
+    File.open(MANIFEST_PATH, 'w') do |file|
+      @manifest_lines.uniq.each do |line|
+        file.puts line
+      end
+    end
+  end
+
+  def read_manifest
+    if File.exist?(MANIFEST_PATH)
+      open(MANIFEST_PATH, 'rb') do |file|
+        file.each_line do |line|
+          @manifest_lines << line.strip
+        end
+      end
+    end
+  end
 end
 
 if ARGV[0].nil?
   puts 'Command syntax: ./download CHANNEL_URL [PDF_FOLDER_PATH]'
+  puts 'Command syntax: ./download [PDF_FOLDER_PATH] --from-manifest'
+elsif ARGV.include?('--from-manifest')
+  index = ARGV.find_index('--from-manifest')
+  downloader = ArenaDownloader.new(nil, ARGV[1 - index])
+  downloader.start
 else
   downloader = ArenaDownloader.new(ARGV[0], ARGV[1])
   downloader.start

@@ -1,6 +1,8 @@
 /PDF/
 .DS_Store
 Gemfile.lock
+manifest.txt
+.ruby-version
 
 *.gem
 *.rbc
