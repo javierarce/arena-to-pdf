@@ -12,7 +12,7 @@ Download all the PDF files in an [are.na](https://are.na) channel.
 ### Downloading from the manifest
 
 Every time you run the `./download` command, the file `manifest.txt` is updated
-with the id of the channel you've just downloaded. If you want to redownload all the PDFs or update your PDF folders, simply rum:
+with the id of the channel you've just downloaded. If you want to redownload all the PDFs or update your PDF folders, simply run:
 
 ```bash
 ./download --from-manifest
